@@ -1,9 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:3000",
-    withCredentials: true,
-})
+    baseURL:
+        window.location.hostname === "localhost"
+            ? "http://localhost:3000"
+            : "https://ai-resume-analyzer-generator.onrender.com",
+    withCredentials: true
+});
 
 
 /**
