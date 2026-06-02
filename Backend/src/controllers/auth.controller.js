@@ -19,7 +19,7 @@ async function registerUserController(req, res) {
     }
 
     const isUserAlreadyExists = await userModel.findOne({
-        $or: [ { username }, { email } ]
+        $or: [{ username }, { email }]
     })
 
     if (isUserAlreadyExists) {
@@ -42,8 +42,12 @@ async function registerUserController(req, res) {
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
-
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 24 * 60 * 60 * 1000
+    })
 
     res.status(201).json({
         message: "User registered successfully",
@@ -53,7 +57,6 @@ async function registerUserController(req, res) {
             email: user.email
         }
     })
-
 }
 
 
@@ -63,7 +66,6 @@ async function registerUserController(req, res) {
  * @access Public
  */
 async function loginUserController(req, res) {
-    
 
     const { email, password } = req.body
 
@@ -89,7 +91,13 @@ async function loginUserController(req, res) {
         { expiresIn: "1d" }
     )
 
-    res.cookie("token", token)
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 24 * 60 * 60 * 1000
+    })
+
     res.status(200).json({
         message: "User loggedIn successfully.",
         user: {
@@ -107,18 +115,24 @@ async function loginUserController(req, res) {
  * @access public
  */
 async function logoutUserController(req, res) {
+
     const token = req.cookies.token
 
     if (token) {
         await tokenBlacklistModel.create({ token })
     }
 
-    res.clearCookie("token")
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none"
+    })
 
     res.status(200).json({
         message: "User logged out successfully"
     })
 }
+
 
 /**
  * @name getMeController
@@ -129,8 +143,6 @@ async function getMeController(req, res) {
 
     const user = await userModel.findById(req.user.id)
 
-
-
     res.status(200).json({
         message: "User details fetched successfully",
         user: {
@@ -139,10 +151,7 @@ async function getMeController(req, res) {
             email: user.email
         }
     })
-
 }
-
-
 
 module.exports = {
     registerUserController,
